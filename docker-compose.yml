@@ -1,0 +1,116 @@
+version: '3.9'
+
+networks:
+  mungnet:
+    driver: bridge
+
+services:
+  front_nginx:
+    container_name: front_nginx_cname
+    image: nginx:1.23.1-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "8001:8001"
+    volumes:
+      - ./docker/front/default.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/front/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - mungnet
+  web:
+    image: nginx:1.23.2
+    container_name: nginx_cname
+    restart: unless-stopped
+    volumes:
+      - ./www/data:/var/www
+      - ./docker/conf/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php_serv
+    expose:
+      - "80"
+    networks:
+      - mungnet
+  web2:
+    image: nginx:1.23.2
+    container_name: nginx_cname2
+    restart: unless-stopped
+    volumes:
+      - ./www/data2:/var/www
+      - ./docker/conf/default2.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php2_serv
+    expose:
+      - "80"
+    networks:
+      - mungnet
+  web3:
+    image: nginx:1.23.2
+    container_name: nginx_cname3
+    restart: unless-stopped
+    volumes:
+      - ./www/data3:/var/www
+      - ./docker/conf/default3.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php3_serv
+    expose:
+      - "80"
+    networks:
+      - mungnet            
+  php_serv:
+    container_name: php_cname
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - redis        
+    working_dir: /var/www
+    volumes:
+      - ./www/data:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/php.ini      
+    expose:
+      - "9000"
+    networks:
+      - mungnet
+  php2_serv:
+    container_name: php2_cname
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - redis        
+    working_dir: /var/www
+    volumes:
+      - ./www/data2:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/php.ini            
+    expose:
+      - "9000"
+    networks:
+      - mungnet
+  php3_serv:
+    container_name: php3_cname
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    working_dir: /var/www
+    depends_on:
+      - redis    
+    volumes:
+      - ./www/data3:/var/www
+      - ./docker/php/php.ini:/usr/local/etc/php/conf.d/php.ini            
+    expose:
+      - "9000"
+    networks:
+      - mungnet            
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis
+    volumes:
+      - ./redis-data:/data
+    expose:
+      - "6379"
+      - "8001"
+    networks:
+      - mungnet

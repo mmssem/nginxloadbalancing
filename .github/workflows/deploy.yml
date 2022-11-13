@@ -1,0 +1,19 @@
+name: progstudy_name         
+
+on:                                    
+  push:                             
+    branches: [ "main" ]     
+
+jobs:
+  progstudy_job:             
+    runs-on: self-hosted     
+    steps:                   
+      - name : git pull on the server
+        run : git pull
+      #  run : git pull git@github.com:mmssem/progstudy.git
+      #- name : Checkout             
+      #  uses: actions/checkout@v3     
+      #- name : docker container delete
+      #  run : docker rm -f $(docker ps -aq) || true
+      #- name : docker container create
+      #  run : docker compose up -d    
